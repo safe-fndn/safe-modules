@@ -1,4 +1,5 @@
 # They're excluded on the global level because each of them defines its own linting and formatting rules
+.github/PULL_REQUEST_TEMPLATE.md
 examples/**
 modules/**
 packages/**
