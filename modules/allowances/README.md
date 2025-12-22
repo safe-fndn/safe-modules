@@ -2,7 +2,7 @@
 
 This contract is a registry of transfer allowances on a Safe that can be used by specific accounts. For this the contract needs to be enabled as a module on the Safe that holds the assets that should be transferred. The registry is written to be used with ERC20 tokens and Ether (represented by the zero address).
 
-All transfer allowances are specific to a Safe, token and delegate. A delegate is an account that can authorize transfers (via a signature).
+All transfer allowances are specific to a Safe, token and delegate. A delegate is an account that can authorize transfers (via a signature or `msg.sender`).
 
 Note: This is not about allowances on an ERC20 token contract.
 
@@ -20,7 +20,7 @@ Note: calling `setAllowance` will not change the `spent` value of an allowance. 
 
 ## Transfer authorization
 
-Transfer are authorized by the delegates and must be within their allowance. To authorize a transfer the delegate needs to generate a signature. The allowance module uses the same [signature scheme as the Gnosis Safe](https://docs.safe.global/learn/safe-core/safe-core-protocol/signatures), except that the allowance module does not support contract signatures or approved hashes.
+Transfer are authorized by the delegates and must be within their allowance. To authorize a transfer the delegate must either generate a valid signature or be the `msg.sender` of the transaction. The allowance module uses the same [signature scheme as the Gnosis Safe](https://docs.safe.global/advanced/smart-account-signatures), except that the allowance module does not support contract signatures or approved hashes. Also if an empty signature is provided, or `v == 1`, the `msg.sender` is used instead.
 
 The allowance module signatures are EIP-712 based. And uses the following scheme:
 
