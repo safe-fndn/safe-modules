@@ -338,6 +338,8 @@ contract AllowanceModule is SignatureDecoder {
                 updateAllowance(msg.sender, delegate, token, allowance);
                 emit DeleteAllowance(msg.sender, delegate, token);
             }
+            // Clear stale data in tokens mapping
+            delete tokens[msg.sender][delegate];
         }
         if (current.prev == 0) {
             delegatesStart[msg.sender] = current.next;
