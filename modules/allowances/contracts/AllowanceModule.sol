@@ -163,8 +163,15 @@ contract AllowanceModule is SignatureDecoder {
         Allowance memory allowance = getAllowance(address(safe), delegate, token);
         bytes memory transferHashData = generateTransferHashData(address(safe), token, to, amount, paymentToken, payment, allowance.nonce);
 
-        // Update state
+        // Check for nonces exhausted
+        // Note that this implies that a delegate can _only_ execute 65534 different transfers for a
+        // particular token allowance. We believe this is a reasonable limit. If more transfers are
+        // needed than multiple delegate accounts must be used.
+        require(allowance.nonce != type(uint16).max, "allowance.nonce != type(uint16).max (use different delegate)");
+        // Update nonce
         allowance.nonce = allowance.nonce + 1;
+
+        // Update spent amount
         uint96 newSpent = allowance.spent + amount;
         // Check new spent amount and overflow
         require(newSpent > allowance.spent && newSpent <= allowance.amount, "newSpent > allowance.spent && newSpent <= allowance.amount");
