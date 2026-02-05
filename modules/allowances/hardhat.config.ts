@@ -6,15 +6,10 @@ import dotenv from 'dotenv'
 import { HardhatUserConfig, HttpNetworkUserConfig } from 'hardhat/types'
 import { DeterministicDeploymentInfo } from 'hardhat-deploy/dist/types'
 import { getSingletonFactoryInfo } from '@safe-global/safe-singleton-factory'
-import "@matterlabs/hardhat-zksync-solc";
-import "@matterlabs/hardhat-zksync-node";
-import "@matterlabs/hardhat-zksync-deploy";
-import "@matterlabs/hardhat-zksync-verify";
-import "@matterlabs/hardhat-zksync-ethers";
 
 dotenv.config()
 
-const { INFURA_KEY, MNEMONIC, ETHERSCAN_API_KEY, CUSTOM_NODE_URL, HARDHAT_ENABLE_ZKSYNC = "0", HARDHAT_CHAIN_ID = 31337 } = process.env
+const { INFURA_KEY, MNEMONIC, ETHERSCAN_API_KEY, CUSTOM_NODE_URL, HARDHAT_CHAIN_ID = 31337 } = process.env
 
 const sharedNetworkConfig: HttpNetworkUserConfig = {
   accounts: {
@@ -57,19 +52,12 @@ const config: HardhatUserConfig = {
       },
     ],
   },
-  zksolc: {
-    version: "1.5.3",
-    settings: {
-      suppressedWarnings: ["TxOrigin", "SendTransfer"]
-    },
-  },
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true,
       blockGasLimit: 100000000,
       gas: 100000000,
-      zksync: HARDHAT_ENABLE_ZKSYNC === "1",
       chainId: typeof HARDHAT_CHAIN_ID === "string" && !Number.isNaN(parseInt(HARDHAT_CHAIN_ID)) ? parseInt(HARDHAT_CHAIN_ID) : 31337,
     },
     mainnet: {
@@ -99,11 +87,6 @@ const config: HardhatUserConfig = {
     avalanche: {
       ...sharedNetworkConfig,
       url: `https://api.avax.network/ext/bc/C/rpc`,
-    },
-    zkSyncSepolia: {
-      ...sharedNetworkConfig,
-      url: "https://sepolia.era.zksync.dev",
-      zksync: true,
     },
     ...customNetwork,
   },
