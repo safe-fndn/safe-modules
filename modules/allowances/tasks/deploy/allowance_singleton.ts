@@ -1,14 +1,13 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { DeployFunction } from 'hardhat-deploy/types'
-import { getDeployerAccount } from '../../src/deploy'
 
 const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments } = hre
   const { deploy } = deployments
-  const deployerAccount = await getDeployerAccount(hre)
+  const { deployer } = await hre.getNamedAccounts()
 
   await deploy('AllowanceModule', {
-    from: deployerAccount,
+    from: deployer,
     args: [],
     log: true,
     deterministicDeployment: true,
