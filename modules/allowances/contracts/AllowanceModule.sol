@@ -310,7 +310,7 @@ contract AllowanceModule is SignatureDecoder {
         return abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator, transferHash);
     }
 
-    /// @notice Generates the transfer hash that should be signed to authorize a transfer
+    /// @notice Generates the transfer hash that should be signed to authorize a transfer.
     /// @param safe The Safe whose funds should be used.
     /// @param token The allowed token.
     /// @param to Address that should receive the tokens.
