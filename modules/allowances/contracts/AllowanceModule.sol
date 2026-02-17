@@ -39,7 +39,7 @@ contract AllowanceModule is SignatureDecoder {
 
     /// @notice The precomputed EIP-712 domain separator type-hash.
     /// @dev This value is precomputed from:
-    ///      keccak256("EIP712Domain(uint256 chainId,address verifyingContract))
+    ///      keccak256("EIP712Domain(uint256 chainId,address verifyingContract)")
     bytes32 public constant DOMAIN_SEPARATOR_TYPEHASH = 0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218;
 
     /// @notice The precomputed EIP-712 allowance transfer type-hash.
