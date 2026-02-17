@@ -316,7 +316,7 @@ contract AllowanceModule is SignatureDecoder {
     /// @param to Address that should receive the tokens.
     /// @param amount Amount that should be transferred.
     /// @param paymentToken Token that should be used to pay for the execution of the transfer.
-    /// @param payment Amount to should be paid for executing the transfer.
+    /// @param payment Amount that should be paid for executing the transfer.
     /// @param nonce The delegate's transfer nonce.
     /// @return The transfer hash.
     function generateTransferHash(
