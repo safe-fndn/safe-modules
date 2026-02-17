@@ -242,6 +242,26 @@ describe('AllowanceModule allowanceManagement', () => {
     expect(await token.balanceOf(bob.address)).to.equal(100)
   })
 
+  it('Does not remove delegates with key collision', async () => {
+    const { safe, allowanceModule, owner, alice } = await setupTests()
+
+    const safeAddress = await safe.getAddress()
+
+    // add alice as delegate
+    await execSafeTransaction(safe, await allowanceModule.addDelegate.populateTransaction(alice.address), owner)
+
+    const delegates = await allowanceModule.getDelegates(safeAddress, 0, 10)
+
+    expect(delegates.results).to.deep.equal([alice.address])
+    expect(delegates.next).to.equal(0)
+
+    // remove alice-like fails
+    const aliceLike = hre.ethers.getAddress(hre.ethers.zeroPadValue(hre.ethers.dataSlice(alice.address, 14), 20))
+    await expect(
+      execSafeTransaction(safe, await allowanceModule.removeDelegate.populateTransaction(aliceLike, true), owner),
+    ).to.be.revertedWith('GS013')
+  })
+
   it('Cannot set allowance without delegate configured', async () => {
     const { safe, allowanceModule, token, owner, alice, bob } = await setupTests()
 
