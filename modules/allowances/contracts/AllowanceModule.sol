@@ -16,6 +16,18 @@ interface ISafe {
         bytes calldata data,
         Enum.Operation operation
     ) external returns (bool success);
+
+    /// @dev Allows a Module to execute a Safe transaction without any further confirmations with propagated return data.
+    /// @param to Destination address of module transaction.
+    /// @param value Ether value of module transaction.
+    /// @param data Data payload of module transaction.
+    /// @param operation Operation type of module transaction.
+    function execTransactionFromModuleReturnData(
+        address to,
+        uint256 value,
+        bytes memory data,
+        Enum.Operation operation
+    ) external returns (bool success, bytes memory returnData);
 }
 
 contract AllowanceModule is SignatureDecoder {
@@ -287,7 +299,11 @@ contract AllowanceModule is SignatureDecoder {
             require(safe.execTransactionFromModule(to, amount, "", Enum.Operation.Call), "Could not execute ether transfer");
         } else {
             bytes memory data = abi.encodeWithSignature("transfer(address,uint256)", to, amount);
-            require(safe.execTransactionFromModule(token, 0, data, Enum.Operation.Call), "Could not execute token transfer");
+            (bool success, bytes memory returnData) = safe.execTransactionFromModuleReturnData(token, 0, data, Enum.Operation.Call);
+            if (success && returnData.length > 0) {
+                success = abi.decode(returnData, (bool));
+            }
+            require(success, "Could not execute token transfer");
         }
     }
 
