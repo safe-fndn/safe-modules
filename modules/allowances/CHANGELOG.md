@@ -12,7 +12,7 @@ Solidity optimizer: disabled
 
 ## Expected addresses
 
-- `AllowanceModule` at `TBD`
+- `AllowanceModule` at `0x428E2C18538239c4Da3c4a214e82Da6eC310607E`
 
 ## Changes
 
