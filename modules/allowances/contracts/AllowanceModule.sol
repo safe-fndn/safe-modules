@@ -156,8 +156,9 @@ contract AllowanceModule is SignatureDecoder {
         emit SetAllowance(msg.sender, delegate, token, allowanceAmount, resetTimeMin);
     }
 
-    /// @dev Reads an allowance from contract storage, ensuring that it is correctly reset in case
-    ///      sufficient time has elapsed.
+    /// @dev Reads an allowance from contract storage, ensuring that the returned in-memory
+    ///      allowance data applies a reset if sufficient time has elapsed. It does not update the
+    ///      allowance data in contract storage.
     /// @param safe The Safe to get the allowance for.
     /// @param delegate The delegate for the allowance.
     /// @param token The allowed token.
