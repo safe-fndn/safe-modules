@@ -526,7 +526,52 @@ describe('AllowanceModule allowanceSingle', () => {
     // load Alice's Allowance
     ;[amount, spent, , ,] = await allowanceModule.getTokenAllowance(safeAddress, alice.address, tokenAddress)
 
-    // expect the last transfer to be reflected
+    // expect the last transfer to not be reflected
+    expect(2000).to.equal(amount)
+    expect(0).to.equal(spent)
+  })
+
+  it('Reverts when token transfer fails without reverting', async () => {
+    const { safe, allowanceModule, owner, alice, bob } = await setupTests()
+
+    // Deploy a token that returns `false` on failed transfers instead of reverting.
+    const token = await hre.ethers.deployContract('WeirdToken')
+
+    const safeAddress = await safe.getAddress()
+    const tokenAddress = await token.getAddress()
+
+    // add alice as delegate
+    await execSafeTransaction(safe, await allowanceModule.addDelegate.populateTransaction(alice.address), owner)
+
+    // create an allowance for alice
+    await execSafeTransaction(safe, await allowanceModule.setAllowance.populateTransaction(alice.address, tokenAddress, 2000, 0, 0), owner)
+
+    // ensure delegates are well configured
+    const { results } = await allowanceModule.getDelegates(safeAddress, 0, 10)
+    expect(results).to.deep.equal([alice.address])
+
+    // ensure tokens from allowances are correct
+    expect(await allowanceModule.getTokens(safeAddress, alice.address)).to.deep.equal([tokenAddress])
+
+    // load an existing allowance
+    let [amount, spent, , ,] = await allowanceModule.getTokenAllowance(safeAddress, alice.address, tokenAddress)
+    expect(2000).to.equal(amount)
+    expect(0).to.equal(spent)
+
+    await expect(
+      execAllowanceTransfer(allowanceModule, {
+        safe: safeAddress,
+        token: tokenAddress,
+        to: bob.address,
+        amount: 2000,
+        spender: alice,
+      }),
+    ).to.be.revertedWith('Could not execute token transfer')
+
+    // load Alice's Allowance
+    ;[amount, spent, , ,] = await allowanceModule.getTokenAllowance(safeAddress, alice.address, tokenAddress)
+
+    // expect the last transfer to not be reflected
     expect(2000).to.equal(amount)
     expect(0).to.equal(spent)
   })
