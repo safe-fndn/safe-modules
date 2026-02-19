@@ -2,6 +2,48 @@
 
 This changelog only contains changes starting from version 0.1.1
 
+# Version 1.0.0
+
+## Compiler settings
+
+Solidity compiler: [0.7.6](https://github.com/ethereum/solidity/releases/tag/v0.7.6)
+
+Solidity optimizer: disabled
+
+## Expected addresses
+
+- `AllowanceModule` at `TBD`
+
+## Changes
+
+### Security
+
+#### Prevent Nonce Overflow in Allowance Module
+
+Pull request: [#520](https://github.com/safe-fndn/safe-modules/pull/520)
+
+Fixes a nonce overflow that would potentially allow replaying past allowance module transfers.
+
+#### Revert on Failed Token Transfer
+
+Issue: [#237](https://github.com/safe-fndn/safe-modules/issues/237)
+
+Fixes an issue where the allowance would not revert as expected for ERC-20 token transfers that returned `false` instead of reverting, which is allowed by the ERC-20 standard (albeit discuraged). This would cause a delegate's allowance data to be updated despite the transfer failing.
+
+### General
+
+#### Prevent Delegate Delition on Key Collision
+
+Pull request: [#523](https://github.com/safe-fndn/safe-modules/pull/523)
+
+Fixes the `removeDelegate` to revert in case of key collision, instead of removing the wrong delegate and leaving orphaned allowances.
+
+#### Add Missing NatSpec Documentation
+
+Pull request: [#525](https://github.com/safe-fndn/safe-modules/pull/525)
+
+Add missing NatSpec documentation to the allowance module contract, improving overall documentation for the contracts.
+
 # Version 0.1.1
 
 ## Compiler settings
