@@ -157,8 +157,7 @@ contract AllowanceModule is SignatureDecoder {
     }
 
     /// @dev Reads an allowance from contract storage, ensuring that the returned in-memory
-    ///      allowance data applies a reset if sufficient time has elapsed. It does not update the
-    ///      allowance data in contract storage.
+    ///      allowance data applies a reset if sufficient time has elapsed.
     /// @param safe The Safe to get the allowance for.
     /// @param delegate The delegate for the allowance.
     /// @param token The allowed token.
