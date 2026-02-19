@@ -332,6 +332,8 @@ contract AllowanceModule is SignatureDecoder {
         Delegate memory current = delegates[msg.sender][uint48(delegate)];
         // Delegate doesn't exists, nothing to do
         if (current.delegate == address(0)) return;
+        // Make sure that the we are deleting the right delegate
+        require(current.delegate == delegate, "current.delegate == delegate");
         if (removeAllowances) {
             address[] storage delegateTokens = tokens[msg.sender][delegate];
             for (uint256 i = 0; i < delegateTokens.length; i++) {
