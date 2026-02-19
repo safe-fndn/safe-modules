@@ -31,37 +31,42 @@ interface ISafe {
 }
 
 contract AllowanceModule is SignatureDecoder {
+    /// @notice A descriptive name for the module.
     string public constant NAME = "Allowance Module";
-    string public constant VERSION = "0.1.1";
 
+    /// @notice The module version.
+    string public constant VERSION = "1.0.0";
+
+    /// @notice The precomputed EIP-712 domain separator type-hash.
+    /// @dev This value is precomputed from:
+    ///      keccak256("EIP712Domain(uint256 chainId,address verifyingContract)")
     bytes32 public constant DOMAIN_SEPARATOR_TYPEHASH = 0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218;
-    // keccak256(
-    //     "EIP712Domain(uint256 chainId,address verifyingContract)"
-    // );
 
+    /// @notice The precomputed EIP-712 allowance transfer type-hash.
+    /// @dev This value is precomputed from:
+    ///      keccak256("AllowanceTransfer(address safe,address token,address to,uint96 amount,address paymentToken,uint96 payment,uint16 nonce)")
     bytes32 public constant ALLOWANCE_TRANSFER_TYPEHASH = 0x97c7ed08d51f4a077f71428543a8a2454799e5f6df78c03ef278be094511eda4;
-    // keccak256(
-    //     "AllowanceTransfer(address safe,address token,address to,uint96 amount,address paymentToken,uint96 payment,uint16 nonce)"
-    // );
 
-    // Safe -> Delegate -> Allowance
+    /// @notice A mapping of Safe -> Delegate -> Allowance
     mapping(address => mapping(address => mapping(address => Allowance))) public allowances;
-    // Safe -> Delegate -> Tokens
+    /// @notice A mapping of Safe -> Delegate -> Tokens
     mapping(address => mapping(address => address[])) public tokens;
-    // Safe -> Delegates double linked list entry points
+    /// @notice A mapping of Safe -> Delegates doubly linked list entry points
     mapping(address => uint48) public delegatesStart;
-    // Safe -> Delegates double linked list
+    /// @notice A mapping of Safe -> Delegates doubly linked list
     mapping(address => mapping(uint48 => Delegate)) public delegates;
 
-    // We use a double linked list for the delegates. The id is the first 6 bytes.
-    // To double check the address in case of collision, the address is part of the struct.
+    /// @notice A delegate doubly linked list node.
+    /// @dev We use a double linked list for the delegates. The id is the first 6 bytes.
+    ///      To double check the address in case of collision, the address is part of the struct.
     struct Delegate {
         address delegate;
         uint48 prev;
         uint48 next;
     }
 
-    // The allowance info is optimized to fit into one word of storage.
+    /// @notice Allowance data.
+    /// @dev The allowance info is optimized to fit into one word of storage.
     struct Allowance {
         uint96 amount;
         uint96 spent;
@@ -70,20 +75,59 @@ contract AllowanceModule is SignatureDecoder {
         uint16 nonce;
     }
 
+    /// @notice Event emitted when a delegate is registered for a Safe.
+    /// @param safe The Safe that added the delegate.
+    /// @param delegate The added delegate.
     event AddDelegate(address indexed safe, address delegate);
+
+    /// @notice Event emitted when a delegate is unregistered for a Safe.
+    /// @param safe The Safe that removed the delegate.
+    /// @param delegate The removed delegate.
     event RemoveDelegate(address indexed safe, address delegate);
+
+    /// @notice Event emitted when an allowance transfer is executed.
+    /// @param safe The Safe with allowance that was used.
+    /// @param delegate The delegate that authorized the spend.
+    /// @param token The allowed token.
+    /// @param to The recipient of the transfer.
+    /// @param value The transferred amount.
+    /// @param nonce The nonce for the delegate's allowance transfer.
     event ExecuteAllowanceTransfer(address indexed safe, address delegate, address token, address to, uint96 value, uint16 nonce);
+
+    /// @notice Event emitted when a relayer is reimbursed for executing an allowance transfer.
+    /// @param safe The Safe with allowance that was used.
+    /// @param delegate The delegate that authorized the spend.
+    /// @param paymentToken The token that was used for the payment.
+    /// @param paymentReceiver The recipient of the payment.
+    /// @param payment The paid amount.
     event PayAllowanceTransfer(address indexed safe, address delegate, address paymentToken, address paymentReceiver, uint96 payment);
+
+    /// @notice Event emitted when an allowance is set.
+    /// @param safe The Safe that set the allowance.
+    /// @param delegate The delegate that can spend the allowance.
+    /// @param token The allowed token.
+    /// @param allowanceAmount The allowed amount.
+    /// @param resetTime Time after which the allowance should reset in minutes.
     event SetAllowance(address indexed safe, address delegate, address token, uint96 allowanceAmount, uint16 resetTime);
+
+    /// @notice Event emitted when an allowance is manually reset.
+    /// @param safe The Safe that set the allowance.
+    /// @param delegate The delegate for whom the allowance was reset.
+    /// @param token The token for the reset allowance.
     event ResetAllowance(address indexed safe, address delegate, address token);
+
+    /// @notice Event emitted when an allowance is revoked.
+    /// @param safe The Safe that deleted the allowance.
+    /// @param delegate The delegate for the deleted allowance.
+    /// @param token The token for the deleted allowance.
     event DeleteAllowance(address indexed safe, address delegate, address token);
 
-    /// @dev Allows to update the allowance for a specified token. This can only be done via a Safe transaction.
+    /// @notice Set an allowance for a specified token. This can only be done via a Safe transaction.
     /// @param delegate Delegate whose allowance should be updated.
-    /// @param token Token contract address.
+    /// @param token Token contract address, or `address(0)` for the native token.
     /// @param allowanceAmount allowance in smallest token unit.
-    /// @param resetTimeMin Time after which the allowance should reset
-    /// @param resetBaseMin Time based on which the reset time should be increased
+    /// @param resetTimeMin Time after which the allowance should reset in minutes.
+    /// @param resetBaseMin Time based on which the reset time should be increased in minutes.
     function setAllowance(address delegate, address token, uint96 allowanceAmount, uint16 resetTimeMin, uint32 resetBaseMin) public {
         require(delegate != address(0), "delegate != address(0)");
         require(
@@ -112,6 +156,12 @@ contract AllowanceModule is SignatureDecoder {
         emit SetAllowance(msg.sender, delegate, token, allowanceAmount, resetTimeMin);
     }
 
+    /// @dev Reads an allowance from contract storage, ensuring that the returned in-memory
+    ///      allowance data applies a reset if sufficient time has elapsed.
+    /// @param safe The Safe to get the allowance for.
+    /// @param delegate The delegate for the allowance.
+    /// @param token The allowed token.
+    /// @return allowance The allowance.
     function getAllowance(address safe, address delegate, address token) private view returns (Allowance memory allowance) {
         allowance = allowances[safe][delegate][token];
         // solium-disable-next-line security/no-block-members
@@ -125,13 +175,18 @@ contract AllowanceModule is SignatureDecoder {
         return allowance;
     }
 
+    /// @dev Update an allowance.
+    /// @param safe The Safe to update the allowance for.
+    /// @param delegate The delegate for the allowance.
+    /// @param token The allowed token.
+    /// @param allowance The updated allowance data.
     function updateAllowance(address safe, address delegate, address token, Allowance memory allowance) private {
         allowances[safe][delegate][token] = allowance;
     }
 
-    /// @dev Allows to reset the allowance for a specific delegate and token.
+    /// @notice Manually reset the allowance for a specific delegate and token.
     /// @param delegate Delegate whose allowance should be updated.
-    /// @param token Token contract address.
+    /// @param token The allowed token.
     function resetAllowance(address delegate, address token) public {
         Allowance memory allowance = getAllowance(msg.sender, delegate, token);
         allowance.spent = 0;
@@ -139,9 +194,10 @@ contract AllowanceModule is SignatureDecoder {
         emit ResetAllowance(msg.sender, delegate, token);
     }
 
-    /// @dev Allows to remove the allowance for a specific delegate and token. This will set all values except the `nonce` to 0.
+    /// @notice Remove an allowance for a specific delegate and token. This will set all values
+    ///         except the `nonce` to 0.
     /// @param delegate Delegate whose allowance should be updated.
-    /// @param token Token contract address.
+    /// @param token The allowed token.
     function deleteAllowance(address delegate, address token) public {
         Allowance memory allowance = getAllowance(msg.sender, delegate, token);
         allowance.amount = 0;
@@ -152,9 +208,9 @@ contract AllowanceModule is SignatureDecoder {
         emit DeleteAllowance(msg.sender, delegate, token);
     }
 
-    /// @dev Allows to use the allowance to perform a transfer.
+    /// @notice Use an allowance to perform a transfer.
     /// @param safe The Safe whose funds should be used.
-    /// @param token Token contract address.
+    /// @param token Token contract address, or `address(0)` for the native token.
     /// @param to Address that should receive the tokens.
     /// @param amount Amount that should be transferred.
     /// @param paymentToken Token that should be used to pay for the execution of the transfer.
@@ -219,7 +275,7 @@ contract AllowanceModule is SignatureDecoder {
         emit ExecuteAllowanceTransfer(address(safe), delegate, token, to, amount, allowance.nonce - 1);
     }
 
-    /// @dev Returns the chain id used by this contract.
+    /// @notice Returns the chain id used by this contract.
     function getChainId() public pure returns (uint256) {
         uint256 id;
         // solium-disable-next-line security/no-inline-assembly
@@ -229,7 +285,16 @@ contract AllowanceModule is SignatureDecoder {
         return id;
     }
 
-    /// @dev Generates the data for the transfer hash (required for signing)
+    /// @dev Generates the pre-image for the transfer hash that is signed by the delegate to
+    ///      authorize an allowance transfer.
+    /// @param safe The Safe whose funds should be used.
+    /// @param token The allowed token.
+    /// @param to Address that should receive the tokens.
+    /// @param amount Amount that should be transferred.
+    /// @param paymentToken Token that should be used to pay for the execution of the transfer.
+    /// @param payment Amount to should be paid for executing the transfer.
+    /// @param nonce The delegate's transfer nonce.
+    /// @return The transfer hash pre-image.
     function generateTransferHashData(
         address safe,
         address token,
@@ -245,7 +310,15 @@ contract AllowanceModule is SignatureDecoder {
         return abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator, transferHash);
     }
 
-    /// @dev Generates the transfer hash that should be signed to authorize a transfer
+    /// @notice Generates the transfer hash that should be signed to authorize a transfer.
+    /// @param safe The Safe whose funds should be used.
+    /// @param token The allowed token.
+    /// @param to Address that should receive the tokens.
+    /// @param amount Amount that should be transferred.
+    /// @param paymentToken Token that should be used to pay for the execution of the transfer.
+    /// @param payment Amount that should be paid for executing the transfer.
+    /// @param nonce The delegate's transfer nonce.
+    /// @return The transfer hash.
     function generateTransferHash(
         address safe,
         address token,
@@ -258,6 +331,11 @@ contract AllowanceModule is SignatureDecoder {
         return keccak256(generateTransferHashData(safe, token, to, amount, paymentToken, payment, nonce));
     }
 
+    /// @dev Checks the signature for the specified transfer hash matches the expected delegate.
+    /// @param expectedDelegate The expected delegate address that signature should recover to.
+    /// @param signature The encoded signature.
+    /// @param transferHashData The transfer hash pre-image.
+    /// @param safe The Safe providing the allowance for the transfer.
     function checkSignature(address expectedDelegate, bytes memory signature, bytes memory transferHashData, ISafe safe) private view {
         address signer = recoverSignature(signature, transferHashData);
         require(
@@ -266,11 +344,17 @@ contract AllowanceModule is SignatureDecoder {
         );
     }
 
-    // We use the same format as used for the Safe contract, except that we only support exactly 1 signature and no contract signatures.
+    /// @dev ECDSA recovery of an encoded signature and a given transfer hash pre-image. This
+    ///      module uses a similar format to the Safe contract, except that it only supports exactly
+    ///      one signature and no contract signatures. In addition, an empty signature can also be
+    ///      provided in order to authenticate with the caller (i.e. `msg.sender`).
+    /// @param signature The encoded signature.
+    /// @param transferHashData The transfer hash pre-image.
+    /// @return owner The recovered signer.
     function recoverSignature(bytes memory signature, bytes memory transferHashData) private view returns (address owner) {
         // If there is no signature data msg.sender should be used
         if (signature.length == 0) return msg.sender;
-        // Check that the provided signature data is as long as 1 encoded ecsda signature
+        // Check that the provided signature data is as long as 1 encoded ECDSA signature
         require(signature.length == 65, "signatures.length == 65");
         uint8 v;
         bytes32 r;
@@ -293,6 +377,10 @@ contract AllowanceModule is SignatureDecoder {
         require(owner != address(0), "owner != address(0)");
     }
 
+    /// @dev Internal function to execute an authorized allowance token transfer.
+    /// @param token Token contract address, or `address(0)` for the native token.
+    /// @param to Address that should receive the tokens.
+    /// @param amount Amount that should be transferred.
     function transfer(ISafe safe, address token, address payable to, uint96 amount) private {
         if (token == address(0)) {
             // solium-disable-next-line security/no-send
@@ -307,10 +395,20 @@ contract AllowanceModule is SignatureDecoder {
         }
     }
 
+    /// @notice Get the list of tokens that a delegate was given allowances to.
+    /// @dev This list includes past allowances that have been either revoked or completely spent.
+    /// @param safe The Safe that has given allowances.
+    /// @param delegate The delegate that was allowed to spend tokens.
+    /// @return The list of tokens that a delegate has received allowances for.
     function getTokens(address safe, address delegate) public view returns (address[] memory) {
         return tokens[safe][delegate];
     }
 
+    /// @notice Gets an allowance.
+    /// @param safe The Safe that gave the allowance.
+    /// @param delegate The delegate that was allowed to spend.
+    /// @param token The allowance token.
+    /// @return The allowance data parameters as `[amount, spent, resetTimeMin, lastResetMin, nonce]`.
     function getTokenAllowance(address safe, address delegate, address token) public view returns (uint256[5] memory) {
         Allowance memory allowance = getAllowance(safe, delegate, token);
         return [
@@ -322,7 +420,7 @@ contract AllowanceModule is SignatureDecoder {
         ];
     }
 
-    /// @dev Allows to add a delegate.
+    /// @notice Add a delegate.
     /// @param delegate Delegate that should be added.
     function addDelegate(address delegate) public {
         uint48 index = uint48(delegate);
@@ -341,9 +439,11 @@ contract AllowanceModule is SignatureDecoder {
         emit AddDelegate(msg.sender, delegate);
     }
 
-    /// @dev Allows to remove a delegate.
+    /// @notice Remove a delegate.
     /// @param delegate Delegate that should be removed.
-    /// @param removeAllowances Indicator if allowances should also be removed. This should be set to `true` unless this causes an out of gas, in this case the allowances should be "manually" deleted via `deleteAllowance`.
+    /// @param removeAllowances Whether or not allowances should also be removed. This should be
+    ///                         set to `true` unless this causes an out of gas, in this case the
+    ///                         allowances should be deleted one-by-one with `deleteAllowance`.
     function removeDelegate(address delegate, bool removeAllowances) public {
         Delegate memory current = delegates[msg.sender][uint48(delegate)];
         // Delegate doesn't exists, nothing to do
@@ -376,6 +476,13 @@ contract AllowanceModule is SignatureDecoder {
         emit RemoveDelegate(msg.sender, delegate);
     }
 
+    /// @notice Gets the list of delegates with allowances for a given Safe.
+    /// @dev This function provides a paginated interface.
+    /// @param safe The Safe to retrieve delegates for.
+    /// @param start The starting delegate key to retrieve delegates.
+    /// @param pageSize The maximum number of delegates to retrieve.
+    /// @return results The delegate addresses.
+    /// @return next The delegate key to start retrieving the next page.
     function getDelegates(address safe, uint48 start, uint8 pageSize) public view returns (address[] memory results, uint48 next) {
         results = new address[](pageSize);
         uint8 i = 0;
