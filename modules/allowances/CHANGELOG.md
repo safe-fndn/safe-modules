@@ -28,11 +28,13 @@ Fixes a nonce overflow that would potentially allow replaying past allowance mod
 
 Issue: [#237](https://github.com/safe-fndn/safe-modules/issues/237)
 
-Fixes an issue where the allowance would not revert as expected for ERC-20 token transfers that returned `false` instead of reverting, which is allowed by the ERC-20 standard (albeit discuraged). This would cause a delegate's allowance data to be updated despite the transfer failing.
+Fixes an issue where the allowance would not revert as expected for ERC-20 token transfers that returned `false` instead of reverting, which is allowed by the ERC-20 standard (albeit discouraged). This would cause a delegate's allowance data to be updated despite the transfer failing.
+
+Note that this fix requires additional Safe features introduced in v1.1.1+ and **breaks compatibility with Safe v1.0.0**.
 
 ### General
 
-#### Prevent Delegate Delition on Key Collision
+#### Prevent Delegate Deletion on Key Collision
 
 Pull request: [#523](https://github.com/safe-fndn/safe-modules/pull/523)
 
