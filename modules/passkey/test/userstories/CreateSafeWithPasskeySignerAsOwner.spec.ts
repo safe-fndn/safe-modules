@@ -115,7 +115,7 @@ describe('Create a Safe with Passkey signer as owner: [@userstory]', () => {
       {
         initCode: ethers.solidityPacked(['address', 'bytes'], [proxyFactory.target, deployData]),
         // Set a higher verificationGasLimit to avoid error "AA26 over verificationGasLimit"
-        verificationGasLimit: 600000,
+        verificationGasLimit: 800000,
       },
     )
 

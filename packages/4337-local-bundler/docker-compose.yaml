@@ -31,6 +31,7 @@ services:
       dockerfile: docker/bundler/Dockerfile
       args:
         TAG: master
+        APPLY_EVENTS_MANAGER_PATCH: 'false'
     restart: always
     command: ['--auto', '--network=http://geth:8545']
     environment:

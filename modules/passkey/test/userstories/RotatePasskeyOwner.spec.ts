@@ -145,17 +145,12 @@ describe('Rotate passkey owner [@userstory]', () => {
       false,
       true,
       {
-        verificationGasLimit: 100000,
+        verificationGasLimit: 500000,
       },
     )
 
     // EOA wallet signs the userOp to swap the Passkey signer
-    const signatureSwapSigner = buildSignatureBytes([
-      {
-        signer: signer as string,
-        data: buildSignatureBytes([await signSafeOp(user, await module.getAddress(), safeOpSwapSigner, await chainId())]),
-      },
-    ])
+    const signatureSwapSigner = buildSignatureBytes([await signSafeOp(user, await module.getAddress(), safeOpSwapSigner, await chainId())])
 
     const packedUserOpSwapSigner = buildPackedUserOperationFromSafeUserOperation({
       safeOp: safeOpSwapSigner,

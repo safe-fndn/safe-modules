@@ -1,0 +1,13 @@
+--- a/packages/bundler/src/modules/EventsManager.ts
++++ b/packages/bundler/src/modules/EventsManager.ts
+@@ -39,7 +39,9 @@ export class EventsManager {
+     if (this.lastBlock === undefined) {
+       this.lastBlock = Math.max(1, await this.entryPoint.provider.getBlockNumber() - 1000)
+     }
+-    const events = await this.entryPoint.queryFilter({ address: this.entryPoint.address }, this.lastBlock)
++    const latestBlock = await this.entryPoint.provider.getBlockNumber()
++    if (this.lastBlock > latestBlock) { return }
++    const events = await this.entryPoint.queryFilter({ address: this.entryPoint.address }, this.lastBlock)
+     for (const ev of events) {
+       this.handleEvent(ev)
+     }
