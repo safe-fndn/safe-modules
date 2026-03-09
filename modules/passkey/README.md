@@ -9,7 +9,7 @@ Passkey support with the Safe is provided by implementing [`SignatureValidator`s
 
 ## Contracts Overview
 
-Safe account being standard agnostic, new user flows such as custom signature verification logic can be added/removed as and when required. By leveraging this flexibility to support customizing Safe account, Passkeys-based execution flow can be enabled on a Safe. The contracts in this package use [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271) standard and [WebAuthn](https://w3c.github.io/webauthn/) standard to allow signature verification for WebAuthn credentials using the secp256r1 curve. The contracts in this package are designed to be used with precompiles for signature verification in the supported networks or use any verifier contract implementing the EIP-7212 interface as a fallback mechanism. In their current state, the contracts are tested with [Fresh Crypto Lib (FCL) P-256 implementation](https://github.com/rdubois-crypto/FreshCryptoLib) and the [Daimo P-256 verifier](https://github.com/daimo-eth/p256-verifier).
+Safe account being standard agnostic, new user flows such as custom signature verification logic can be added/removed as and when required. By leveraging this flexibility to support customizing Safe account, Passkeys-based execution flow can be enabled on a Safe. The contracts in this package use [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271) standard and [WebAuthn](https://w3c.github.io/webauthn/) standard to allow signature verification for WebAuthn credentials using the secp256r1 curve. The contracts in this package are designed to be used with precompiles for signature verification in the supported networks or use any verifier contract implementing the EIP-7212 interface as a fallback mechanism. In their current state, the contracts are tested with [Daimo P-256 verifier](https://github.com/daimo-eth/p256-verifier).
 
 The below sections give a high-level overview of the contracts present in this package.
 
@@ -102,7 +102,7 @@ npx hardhat --network $NETWORK verify $SAFE_WEBAUTHN_SIGNER_SINGLETON_ADDRESS --
 
 ### Compiler settings
 
-The project uses Solidity compiler version `0.8.26` with 10 million IR optimizer runs, as we want to optimize for the code execution costs. Note that the `FCLP256Verifier` contract use the legacy bytecode optimizer in order to prevent performance regressions caused by the new IR optimizer. The EVM version is set to `paris` because not all our target networks support the opcodes introduced in the `Shanghai` EVM upgrade.
+The project uses Solidity compiler version `0.8.26` with 10 million IR optimizer runs, as we want to optimize for the code execution costs. The EVM version is set to `paris` because not all our target networks support the opcodes introduced in the `Shanghai` EVM upgrade.
 
 #### Custom Networks
 

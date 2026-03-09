@@ -27,7 +27,7 @@ describe('Gas Benchmarking [@bench]', function () {
   })
 
   const setupTests = deployments.createFixture(async ({ deployments }) => {
-    const { DaimoP256Verifier, FCLP256Verifier, SafeWebAuthnSignerFactory } = await deployments.fixture()
+    const { DaimoP256Verifier, SafeWebAuthnSignerFactory } = await deployments.fixture()
 
     const Benchmarker = await ethers.getContractFactory('Benchmarker')
     const benchmarker = await Benchmarker.deploy()
@@ -36,7 +36,6 @@ describe('Gas Benchmarking [@bench]', function () {
 
     const DummyP256Verifier = await ethers.getContractFactory('DummyP256Verifier')
     const verifiersConfig = {
-      fcl: [0, await ethers.getContractAt('IP256Verifier', FCLP256Verifier.address)],
       daimo: [0, await ethers.getContractAt('IP256Verifier', DaimoP256Verifier.address)],
       dummy: [0, await DummyP256Verifier.deploy()],
       precompile: [0x0100, null],
@@ -58,7 +57,6 @@ describe('Gas Benchmarking [@bench]', function () {
     })
 
     for (const [name, key, networkName] of [
-      ['FreshCryptoLib', 'fcl', null],
       ['Daimo', 'daimo', null],
       ['Dummy', 'dummy', null],
       ['Precompile', 'precompile', 'localhost'],

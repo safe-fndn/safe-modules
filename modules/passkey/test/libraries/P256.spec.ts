@@ -7,18 +7,18 @@ import { MockContract } from '../../typechain-types'
 
 describe('P256', function () {
   const setupTests = deployments.createFixture(async ({ deployments }) => {
-    const { FCLP256Verifier } = await deployments.fixture()
+    const { DaimoP256Verifier } = await deployments.fixture()
 
-    const verifier = await ethers.getContractAt('FCLP256Verifier', FCLP256Verifier.address)
+    const verifier = await ethers.getContractAt('IP256Verifier', DaimoP256Verifier.address)
 
     const precompileAddress = ethers.toBeHex(0x0100, 20)
     await setCode(precompileAddress, await ethers.provider.getCode(verifier))
     const precompile = await ethers.getContractAt('IP256Verifier', precompileAddress)
 
-    const verifiers = BigInt(ethers.solidityPacked(['uint16', 'address'], [precompileAddress, FCLP256Verifier.address]))
+    const verifiers = BigInt(ethers.solidityPacked(['uint16', 'address'], [precompileAddress, DaimoP256Verifier.address]))
     const allVerifiers = [
-      [precompileAddress, FCLP256Verifier.address],
-      [ethers.ZeroAddress, FCLP256Verifier.address],
+      [precompileAddress, DaimoP256Verifier.address],
+      [ethers.ZeroAddress, DaimoP256Verifier.address],
       [precompileAddress, ethers.ZeroAddress],
       [ethers.ZeroAddress, precompileAddress],
     ].map(([precompile, fallback]) => BigInt(ethers.solidityPacked(['uint16', 'address'], [precompile, fallback])))

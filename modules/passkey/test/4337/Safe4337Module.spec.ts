@@ -19,7 +19,7 @@ describe('Safe4337Module', () => {
       SafeL2,
       SafeProxyFactory,
       MultiSend,
-      FCLP256Verifier,
+      DaimoP256Verifier,
       Safe4337Module,
       EntryPoint,
       SafeWebAuthnSignerFactory,
@@ -38,7 +38,7 @@ describe('Safe4337Module', () => {
     const signerFactory = await ethers.getContractAt('SafeWebAuthnSignerFactory', SafeWebAuthnSignerFactory.address)
     const sharedSigner = await ethers.getContractAt('SafeWebAuthnSharedSigner', SafeWebAuthnSharedSigner.address)
 
-    const verifiers = BigInt(FCLP256Verifier.address)
+    const verifiers = BigInt(DaimoP256Verifier.address)
 
     const navigator = {
       credentials: new WebAuthnCredentials(),
@@ -109,7 +109,7 @@ describe('Safe4337Module', () => {
           false,
           {
             initCode: safe.getInitCode(),
-            verificationGasLimit: 625000,
+            verificationGasLimit: 800000,
           },
         )
         const safeOpHash = calculateSafeOperationHash(await module.getAddress(), safeOp, chainId)
@@ -379,7 +379,7 @@ describe('Safe4337Module', () => {
                 proxyFactory.interface.encodeFunctionData('createProxyWithNonce', [singleton.target, initializer, safeSalt]),
               ],
             ),
-            verificationGasLimit: 700000,
+            verificationGasLimit: 900000,
           },
         )
         const safeOpHash = await module.getOperationHash(

@@ -17,12 +17,12 @@ import { buildSignatureBytes } from '@safe-global/safe-4337/src/utils/execution'
  */
 describe('Offchain Passkey Signature Verification [@userstory]', () => {
   const setupTests = deployments.createFixture(async ({ deployments }) => {
-    const { SafeProxyFactory, SafeL2, FCLP256Verifier, SafeWebAuthnSignerFactory, CompatibilityFallbackHandler } = await deployments.run()
+    const { SafeProxyFactory, SafeL2, DaimoP256Verifier, SafeWebAuthnSignerFactory, CompatibilityFallbackHandler } = await deployments.run()
 
     const proxyFactory = await ethers.getContractAt(SafeProxyFactory.abi, SafeProxyFactory.address)
     const singleton = await ethers.getContractAt(SafeL2.abi, SafeL2.address)
     const fallbackHandler = await ethers.getContractAt(CompatibilityFallbackHandler.abi, CompatibilityFallbackHandler.address)
-    const verifier = await ethers.getContractAt('IP256Verifier', FCLP256Verifier.address)
+    const verifier = await ethers.getContractAt('IP256Verifier', DaimoP256Verifier.address)
     const signerFactory = await ethers.getContractAt('SafeWebAuthnSignerFactory', SafeWebAuthnSignerFactory.address)
 
     const navigator = {

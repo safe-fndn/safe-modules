@@ -24,7 +24,7 @@ import { chainId } from '../utils/hardhat'
 describe('Rotate passkey owner [@userstory]', () => {
   // Create a fixture to setup the contracts and signer(s)
   const setupTests = deployments.createFixture(async ({ deployments }) => {
-    const { EntryPoint, Safe4337Module, SafeProxyFactory, SafeModuleSetup, SafeL2, FCLP256Verifier, SafeWebAuthnSignerFactory } =
+    const { EntryPoint, Safe4337Module, SafeProxyFactory, SafeModuleSetup, SafeL2, DaimoP256Verifier, SafeWebAuthnSignerFactory } =
       await deployments.run()
 
     // EOA which will be the owner of the Safe
@@ -35,7 +35,7 @@ describe('Rotate passkey owner [@userstory]', () => {
     const proxyFactory = await ethers.getContractAt(SafeProxyFactory.abi, SafeProxyFactory.address)
     const safeModuleSetup = await ethers.getContractAt(SafeModuleSetup.abi, SafeModuleSetup.address)
     const singleton = await ethers.getContractAt(SafeL2.abi, SafeL2.address)
-    const verifier = await ethers.getContractAt('IP256Verifier', FCLP256Verifier.address)
+    const verifier = await ethers.getContractAt('IP256Verifier', DaimoP256Verifier.address)
     const signerFactory = await ethers.getContractAt('SafeWebAuthnSignerFactory', SafeWebAuthnSignerFactory.address)
 
     const navigator = {
@@ -60,8 +60,8 @@ describe('Rotate passkey owner [@userstory]', () => {
     })
 
     const publicKey = decodePublicKey(credential.response)
-    await signerFactory.createSigner(publicKey.x, publicKey.y, FCLP256Verifier.address)
-    const signer = await signerFactory.getSigner(publicKey.x, publicKey.y, FCLP256Verifier.address)
+    await signerFactory.createSigner(publicKey.x, publicKey.y, DaimoP256Verifier.address)
+    const signer = await signerFactory.getSigner(publicKey.x, publicKey.y, DaimoP256Verifier.address)
 
     // The initializer data to enable the Safe4337Module as a module on a Safe
     const initializer = safeModuleSetup.interface.encodeFunctionData('enableModules', [[module.target]])

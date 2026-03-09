@@ -19,13 +19,6 @@ const deploy: DeployFunction = async (hre) => {
       log: true,
     }),
   )
-
-  await deploy('FCLP256Verifier', {
-    from: deployer,
-    args: [],
-    deterministicDeployment: true,
-    log: true,
-  })
 }
 
 function withArachnidDeterministicDeploymentProxy<T>({ config }: HardhatRuntimeEnvironment, f: () => Promise<T>): Promise<T> {

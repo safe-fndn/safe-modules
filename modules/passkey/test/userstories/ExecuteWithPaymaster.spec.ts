@@ -17,7 +17,7 @@ import { buildSignatureBytes } from '@safe-global/safe-4337/dist/src/utils/execu
  */
 describe('Execute userOps with Paymaster: [@userstory]', () => {
   const generalSetup = deployments.createFixture(async ({ deployments }) => {
-    const { EntryPoint, Safe4337Module, SafeProxyFactory, SafeModuleSetup, SafeL2, FCLP256Verifier, SafeWebAuthnSignerFactory } =
+    const { EntryPoint, Safe4337Module, SafeProxyFactory, SafeModuleSetup, SafeL2, DaimoP256Verifier, SafeWebAuthnSignerFactory } =
       await deployments.run()
 
     const [relayer, verifyingSigner] = await ethers.getSigners()
@@ -27,7 +27,7 @@ describe('Execute userOps with Paymaster: [@userstory]', () => {
     const proxyFactory = await ethers.getContractAt(SafeProxyFactory.abi, SafeProxyFactory.address)
     const safeModuleSetup = await ethers.getContractAt(SafeModuleSetup.abi, SafeModuleSetup.address)
     const singleton = await ethers.getContractAt(SafeL2.abi, SafeL2.address)
-    const verifier = await ethers.getContractAt('IP256Verifier', FCLP256Verifier.address)
+    const verifier = await ethers.getContractAt('IP256Verifier', DaimoP256Verifier.address)
     const signerFactory = await ethers.getContractAt('SafeWebAuthnSignerFactory', SafeWebAuthnSignerFactory.address)
 
     // Deploy a Paymaster contract
@@ -153,7 +153,7 @@ describe('Execute userOps with Paymaster: [@userstory]', () => {
         {
           initCode: ethers.solidityPacked(['address', 'bytes'], [proxyFactory.target, deployData]),
           // Set a higher verificationGasLimit to avoid error "AA26 over verificationGasLimit"
-          verificationGasLimit: 600000,
+          verificationGasLimit: 800000,
           paymasterAndData: paymasterAndData,
         },
       )

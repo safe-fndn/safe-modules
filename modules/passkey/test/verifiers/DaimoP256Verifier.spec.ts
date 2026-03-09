@@ -4,11 +4,11 @@ import { deployments, ethers } from 'hardhat'
 
 import { Account } from '../utils/p256'
 
-describe('FCLP256Verifier', function () {
+describe('DaimoP256Verifier', function () {
   const setupTests = deployments.createFixture(async ({ deployments }) => {
-    const { FCLP256Verifier } = await deployments.fixture()
+    const { DaimoP256Verifier } = await deployments.fixture()
 
-    const verifier = await ethers.getContractAt('FCLP256Verifier', FCLP256Verifier.address)
+    const verifier = await ethers.getContractAt('IP256Verifier', DaimoP256Verifier.address)
 
     async function verifySignature(message: BytesLike, r: BigNumberish, s: BigNumberish, x: BigNumberish, y: BigNumberish) {
       const coder = ethers.AbiCoder.defaultAbiCoder()
@@ -23,7 +23,7 @@ describe('FCLP256Verifier', function () {
   })
 
   const SUCCESS = `0x${'00'.repeat(31)}01`
-  const FAILURE = '0x'
+  const FAILURE = ethers.ZeroHash
 
   it('Should return 1 on valid signature', async function () {
     const { verifySignature, account } = await setupTests()

@@ -15,13 +15,13 @@ describe('Execute Safe Transaction [@userstory]', () => {
   }
 
   const setupTests = deployments.createFixture(async ({ deployments }) => {
-    const { SafeProxyFactory, SafeL2, FCLP256Verifier, SafeWebAuthnSignerFactory, SafeWebAuthnSharedSigner } = await deployments.run()
+    const { SafeProxyFactory, SafeL2, DaimoP256Verifier, SafeWebAuthnSignerFactory, SafeWebAuthnSharedSigner } = await deployments.run()
 
     const [relayer] = await ethers.getSigners()
 
     const proxyFactory = await ethers.getContractAt(SafeProxyFactory.abi, SafeProxyFactory.address)
     const singleton = await ethers.getContractAt(SafeL2.abi, SafeL2.address)
-    const verifier = await ethers.getContractAt('IP256Verifier', FCLP256Verifier.address)
+    const verifier = await ethers.getContractAt('IP256Verifier', DaimoP256Verifier.address)
     const signerFactory = await ethers.getContractAt('SafeWebAuthnSignerFactory', SafeWebAuthnSignerFactory.address)
     const sharedSigner = await ethers.getContractAt('SafeWebAuthnSharedSigner', SafeWebAuthnSharedSigner.address)
 

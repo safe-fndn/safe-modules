@@ -28,7 +28,7 @@ describe('Safe WebAuthn Shared Signer [@4337]', () => {
       SafeModuleSetup,
       MultiSend,
       SafeL2,
-      FCLP256Verifier,
+      DaimoP256Verifier,
       SafeWebAuthnSharedSigner,
       SafeWebAuthnSignerFactory,
     } = await deployments.run()
@@ -41,7 +41,7 @@ describe('Safe WebAuthn Shared Signer [@4337]', () => {
     const safeModuleSetup = await ethers.getContractAt(SafeModuleSetup.abi, SafeModuleSetup.address)
     const multiSend = await ethers.getContractAt(MultiSend.abi, MultiSend.address)
     const singleton = await ethers.getContractAt(SafeL2.abi, SafeL2.address)
-    const verifier = await ethers.getContractAt('IP256Verifier', FCLP256Verifier.address)
+    const verifier = await ethers.getContractAt('IP256Verifier', DaimoP256Verifier.address)
     const sharedSigner = await ethers.getContractAt('SafeWebAuthnSharedSigner', SafeWebAuthnSharedSigner.address)
     const signerFactory = await ethers.getContractAt('SafeWebAuthnSignerFactory', SafeWebAuthnSignerFactory.address)
 
@@ -126,7 +126,7 @@ describe('Safe WebAuthn Shared Signer [@4337]', () => {
       false,
       {
         initCode,
-        verificationGasLimit: 700000,
+        verificationGasLimit: 900000,
       },
     )
     const opHash = await module.getOperationHash(
@@ -266,7 +266,7 @@ describe('Safe WebAuthn Shared Signer [@4337]', () => {
       false,
       {
         initCode,
-        verificationGasLimit: 700000,
+        verificationGasLimit: 900000,
       },
     )
     const opHash = await module.getOperationHash(

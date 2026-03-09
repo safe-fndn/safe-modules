@@ -10,9 +10,9 @@ import { decodePublicKey } from '../../src/utils/webauthn'
  */
 describe('Deterministic passkey signer address [@userstory]', () => {
   const setupTests = deployments.createFixture(async ({ deployments }) => {
-    const { FCLP256Verifier, SafeWebAuthnSignerFactory } = await deployments.run()
+    const { DaimoP256Verifier, SafeWebAuthnSignerFactory } = await deployments.run()
 
-    const verifier = await ethers.getContractAt('IP256Verifier', FCLP256Verifier.address)
+    const verifier = await ethers.getContractAt('IP256Verifier', DaimoP256Verifier.address)
     const signerFactory = await ethers.getContractAt('SafeWebAuthnSignerFactory', SafeWebAuthnSignerFactory.address)
 
     const navigator = {
