@@ -17,7 +17,6 @@
     "build:ts": "rimraf dist && tsc",
     "test": "hardhat test --deploy-fixture",
     "test:4337": "4337-local-bundler-test",
-    "test:4337:upstream": "USE_UPSTREAM_BUNDLER=1 4337-local-bundler-test",
     "test:all": "pnpm run test && npm run test:4337",
     "coverage": "hardhat coverage",
     "codesize": "hardhat codesize",

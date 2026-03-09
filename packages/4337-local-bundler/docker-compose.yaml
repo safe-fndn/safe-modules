@@ -24,17 +24,3 @@ services:
       DEBUG: 'aa.exec,aa.exec.cron,aa.events,aa.mempool'
     ports:
       - 3000:3000
-
-  bundler-upstream:
-    build:
-      context: .
-      dockerfile: docker/bundler/Dockerfile
-      args:
-        TAG: master
-        APPLY_EVENTS_MANAGER_PATCH: 'false'
-    restart: always
-    command: ['--auto', '--network=http://geth:8545']
-    environment:
-      DEBUG: 'aa.exec,aa.exec.cron,aa.events,aa.mempool'
-    ports:
-      - 3000:3000
