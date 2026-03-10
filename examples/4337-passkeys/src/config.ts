@@ -1,5 +1,9 @@
 import { getMultiSendDeployment, getProxyFactoryDeployment, getSafeL2SingletonDeployment } from '@safe-global/safe-deployments'
-import { getSafe4337ModuleDeployment, getSafeModuleSetupDeployment, getDaimoP256VerifierDeployment } from '@safe-global/safe-modules-deployments'
+import {
+  getSafe4337ModuleDeployment,
+  getSafeModuleSetupDeployment,
+  getDaimoP256VerifierDeployment,
+} from '@safe-global/safe-modules-deployments'
 
 // 11155111 = Sepolia testnet chain id
 const APP_CHAIN_ID = 11155111
