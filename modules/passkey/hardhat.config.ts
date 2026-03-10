@@ -33,18 +33,6 @@ const customNetwork = CUSTOM_NODE_URL
     }
   : {}
 
-const compilerSettings = {
-  version: '0.8.26',
-  settings: {
-    optimizer: {
-      enabled: true,
-      runs: 10_000_000,
-    },
-    viaIR: true,
-    evmVersion: 'paris',
-  },
-}
-
 const deterministicDeployment = (network: string): DeterministicDeploymentInfo => {
   const info = getSingletonFactoryInfo(parseInt(network))
   if (!info) {
@@ -89,7 +77,15 @@ const config: HardhatUserConfig = {
   },
   deterministicDeployment,
   solidity: {
-    compilers: [compilerSettings],
+    version: '0.8.26',
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 10_000_000,
+      },
+      viaIR: true,
+      evmVersion: 'paris',
+    },
   },
   namedAccounts: {
     deployer: 0,

@@ -1,5 +1,24 @@
 # Changelog
 
+# Version 0.3.0
+
+## Compiler settings
+
+Solidity compiler: [0.8.26](https://github.com/ethereum/solidity/releases/tag/v0.8.26)
+
+Solidity optimizer: enabled with 10.000.000 runs (via IR for all contracts)
+EVM target: Paris
+
+## Expected addresses
+
+Same address as 0.2.1 release for all contracts, only the FCL contracts were removed.
+
+## Changes
+
+### General
+
+- Remove the `FCLP256Verifier` contract and all related code, as it has some known bugs (nothing security critical ATM).
+
 # Version 0.2.1
 
 ## Compiler settings

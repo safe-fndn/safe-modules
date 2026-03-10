@@ -1,6 +1,6 @@
 {
   "name": "@safe-global/safe-passkey",
-  "version": "0.2.1-1",
+  "version": "0.3.0",
   "author": "@safe-global",
   "description": "Safe Passkey Owner",
   "homepage": "https://github.com/safe-global/safe-modules/tree/main/modules/passkey",
