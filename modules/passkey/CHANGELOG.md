@@ -2,17 +2,6 @@
 
 # Current Version
 
-## Compiler settings
-
-Solidity compiler: [0.8.26](https://github.com/ethereum/solidity/releases/tag/v0.8.26)
-
-Solidity optimizer: enabled with 10.000.000 runs (via IR for all contracts)
-EVM target: Paris
-
-## Expected addresses
-
-Same address as 0.2.1 release for all contracts, only the FCL contracts were removed.
-
 ## Changes
 
 ### General
