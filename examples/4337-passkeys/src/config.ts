@@ -1,5 +1,5 @@
 import { getMultiSendDeployment, getProxyFactoryDeployment, getSafeL2SingletonDeployment } from '@safe-global/safe-deployments'
-import { getSafe4337ModuleDeployment, getSafeModuleSetupDeployment } from '@safe-global/safe-modules-deployments'
+import { getSafe4337ModuleDeployment, getSafeModuleSetupDeployment, getDaimoP256VerifierDeployment } from '@safe-global/safe-modules-deployments'
 
 // 11155111 = Sepolia testnet chain id
 const APP_CHAIN_ID = 11155111
@@ -31,9 +31,7 @@ const SAFE_4337_MODULE_ADDRESS = getDeploymentAddress(getSafe4337ModuleDeploymen
 
 const SAFE_MODULE_SETUP_ADDRESS = getDeploymentAddress(getSafeModuleSetupDeployment)
 
-// Daimo P256 verifier deployed at a canonical address across all EVM chains via CREATE2.
-// https://github.com/daimo-eth/p256-verifier
-const P256_VERIFIER_ADDRESS = '0xc2b78104907F722DABAc4C69f826a522B2754De4'
+const P256_VERIFIER_ADDRESS = getDeploymentAddress(getDaimoP256VerifierDeployment)
 
 const SAFE_PROXY_FACTORY_ADDRESS = getDeploymentAddress(getProxyFactoryDeployment)
 
