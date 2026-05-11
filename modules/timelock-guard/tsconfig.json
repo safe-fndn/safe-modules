@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2020",
+    "typeRoots": [
+      "node_modules/@types",
+      "typings",
+      "typechain-types/hardhat.d.ts"
+    ]
+  },
+  "include": ["test", "tasks", "./typechain-types", "./hardhat.config.ts"]
+}
