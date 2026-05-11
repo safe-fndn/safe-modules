@@ -1,4 +1,9 @@
 packages:
-  - 'examples/*'
   - 'packages/*'
-  - 'modules/*'
+  - 'modules/4337'
+  - 'modules/allowances'
+  - 'modules/passkey'
+  - 'modules/timelock-guard'
+  # modules/recovery excluded locally — requires yarn for a git-hosted candide dep
+  # examples/* excluded locally — safe-passkey version mismatch (0.3.0 vs ^0.2.1-1)
+  # Restore before submitting PR: git checkout pnpm-workspace.yaml
