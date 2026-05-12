@@ -273,8 +273,13 @@ contract TimelockGuard is BaseTransactionGuard {
      */
     function checkAfterExecution(bytes32 txHash, bool success) external override {
         if (success) {
-            delete _schedules[msg.sender][txHash];
-            emit TransactionExecuted(msg.sender, txHash);
+            // Guard may be called for txs that bypassed the timelock (e.g. the setGuard bootstrap
+            // tx itself). Only emit and delete when the tx was actually scheduled.
+            uint256 readyAt = _schedules[msg.sender][txHash];
+            if (readyAt != 0) {
+                delete _schedules[msg.sender][txHash];
+                emit TransactionExecuted(msg.sender, txHash);
+            }
         }
     }
 
