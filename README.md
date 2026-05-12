@@ -8,6 +8,7 @@ This repository contains a collection of modules for the [Safe Smart Account](ht
 - [Allowance Module](./modules/allowances)
 - [Passkey](./modules/passkey)
 - [Recovery Module](./modules/recovery/)
+- [Timelock Guard](./modules/timelock-guard)
 
 ## Examples
 
