@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.8.0 <0.9.0;
 
-import {BaseTransactionGuard, ITransactionGuard} from "@safe-global/safe-smart-account/contracts/base/GuardManager.sol";
+import {BaseTransactionGuard} from "@safe-global/safe-smart-account/contracts/base/GuardManager.sol";
 import {ISafe} from "@safe-global/safe-smart-account/contracts/interfaces/ISafe.sol";
 import {Enum} from "@safe-global/safe-smart-account/contracts/libraries/Enum.sol";
 
@@ -71,11 +71,11 @@ contract TimelockGuard is BaseTransactionGuard {
 
     // ─── Errors ──────────────────────────────────────────────────────────────
 
-    error NotSafe();
     error NotAuthorizedCanceller();
     error DelayBelowMinimum(uint256 provided, uint256 min);
     error DelayAboveMaximum(uint256 provided, uint256 max);
     error TimelockNotConfigured(address safe);
+    error AlreadyConfigured(address safe);
     error AlreadyScheduled(bytes32 txHash);
     error NotScheduled(bytes32 txHash);
     error DelayNotElapsed(uint256 readyAt, uint256 nowTs);
@@ -88,8 +88,8 @@ contract TimelockGuard is BaseTransactionGuard {
      * @param maxDelay Maximum delay in seconds that any Safe may configure. Must be >= minDelay.
      */
     constructor(uint256 minDelay, uint256 maxDelay) {
-        // TODO: require(minDelay > 0, "TimelockGuard: minDelay must be > 0")
-        // TODO: require(maxDelay >= minDelay, "TimelockGuard: maxDelay must be >= minDelay")
+        if (minDelay == 0) revert DelayBelowMinimum(0, 1);
+        if (maxDelay < minDelay) revert DelayBelowMinimum(maxDelay, minDelay);
         MIN_DELAY = minDelay;
         MAX_DELAY = maxDelay;
     }
@@ -110,10 +110,10 @@ contract TimelockGuard is BaseTransactionGuard {
      * @param delay Initial delay in seconds. Must be within [MIN_DELAY, MAX_DELAY].
      */
     function setUp(uint256 delay) external {
-        // TODO: require(_delays[msg.sender] == 0, "TimelockGuard: already configured; use updateDelay")
-        // TODO: _validateDelay(delay)
-        // TODO: _delays[msg.sender] = delay
-        // TODO: emit TimelockSetUp(msg.sender, delay)
+        if (_delays[msg.sender] != 0) revert AlreadyConfigured(msg.sender);
+        _validateDelay(delay);
+        _delays[msg.sender] = delay;
+        emit TimelockSetUp(msg.sender, delay);
     }
 
     /**
@@ -123,11 +123,11 @@ contract TimelockGuard is BaseTransactionGuard {
      * @param newDelay New delay in seconds. Must be within [MIN_DELAY, MAX_DELAY].
      */
     function updateDelay(uint256 newDelay) external {
-        // TODO: require(_delays[msg.sender] != 0, TimelockNotConfigured(msg.sender))
-        // TODO: _validateDelay(newDelay)
-        // TODO: uint256 old = _delays[msg.sender]
-        // TODO: _delays[msg.sender] = newDelay
-        // TODO: emit DelayUpdated(msg.sender, old, newDelay)
+        if (_delays[msg.sender] == 0) revert TimelockNotConfigured(msg.sender);
+        _validateDelay(newDelay);
+        uint256 oldDelay = _delays[msg.sender];
+        _delays[msg.sender] = newDelay;
+        emit DelayUpdated(msg.sender, oldDelay, newDelay);
     }
 
     /**
@@ -137,9 +137,9 @@ contract TimelockGuard is BaseTransactionGuard {
      * @param enabled True to grant, false to revoke.
      */
     function setCanceller(address account, bool enabled) external {
-        // TODO: require(_delays[msg.sender] != 0, TimelockNotConfigured(msg.sender))
-        // TODO: _cancellers[msg.sender][account] = enabled
-        // TODO: emit CancellerUpdated(msg.sender, account, enabled)
+        if (_delays[msg.sender] == 0) revert TimelockNotConfigured(msg.sender);
+        _cancellers[msg.sender][account] = enabled;
+        emit CancellerUpdated(msg.sender, account, enabled);
     }
 
     // ─── Lifecycle ───────────────────────────────────────────────────────────
@@ -153,20 +153,24 @@ contract TimelockGuard is BaseTransactionGuard {
      *      After the configured delay elapses, calling {ISafe-execTransaction} with identical
      *      parameters will succeed: {checkTransaction} will find the schedule and allow execution.
      *
-     * @param safe         The Safe to schedule the transaction for.
-     * @param to           Destination address.
-     * @param value        Native token value (wei).
-     * @param data         Call data.
-     * @param operation    {Enum.Operation} — CALL or DELEGATECALL.
-     * @param safeTxGas    Gas allocated for the inner call.
-     * @param baseGas      Base gas (signature check, payment overhead).
-     * @param gasPrice     Gas price for the refund calculation.
-     * @param gasToken     Token used for the refund (address(0) for native).
+     *      Follows the Checks-Effects-Interactions pattern: the schedule entry is written to storage
+     *      before {ISafe-checkSignatures} is invoked, because checkSignatures may call into EIP-1271
+     *      contract wallets and those calls must not be able to re-enter and double-schedule.
+     *
+     * @param safe           The Safe to schedule the transaction for.
+     * @param to             Destination address.
+     * @param value          Native token value (wei).
+     * @param data           Call data.
+     * @param operation      {Enum.Operation} — CALL or DELEGATECALL.
+     * @param safeTxGas      Gas allocated for the inner call.
+     * @param baseGas        Base gas (signature check, payment overhead).
+     * @param gasPrice       Gas price for the refund calculation.
+     * @param gasToken       Token used for the refund (address(0) for native).
      * @param refundReceiver Recipient of the gas refund.
-     * @param nonce        Safe nonce. Must be >= the Safe's current nonce.
-     * @param signatures   Packed owner signatures over the Safe transaction hash.
-     * @return txHash      The Safe transaction hash that was scheduled.
-     * @return readyAt     Unix timestamp at which the transaction becomes executable.
+     * @param nonce          Safe nonce. Must be >= the Safe's current nonce.
+     * @param signatures     Packed owner signatures over the Safe transaction hash.
+     * @return txHash        The Safe transaction hash that was scheduled.
+     * @return readyAt       Unix timestamp at which the transaction becomes executable.
      */
     function scheduleTransaction(
         address safe,
@@ -182,16 +186,25 @@ contract TimelockGuard is BaseTransactionGuard {
         uint256 nonce,
         bytes calldata signatures
     ) external returns (bytes32 txHash, uint256 readyAt) {
-        // TODO: uint256 delay = _delays[safe]
-        // TODO: if (delay == 0) revert TimelockNotConfigured(safe)
-        // TODO: uint256 currentNonce = ISafe(safe).nonce()
-        // TODO: if (nonce < currentNonce) revert NonceInThePast(nonce, currentNonce)
-        // TODO: txHash = ISafe(safe).getTransactionHash(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce)
-        // TODO: if (_schedules[safe][txHash] != 0) revert AlreadyScheduled(txHash)
-        // TODO: ISafe(safe).checkSignatures(address(this), txHash, signatures)
-        // TODO: readyAt = block.timestamp + delay
-        // TODO: _schedules[safe][txHash] = readyAt
-        // TODO: emit TransactionScheduled(safe, txHash, to, value, data, operation, nonce, readyAt)
+        uint256 delay = _delays[safe];
+        if (delay == 0) revert TimelockNotConfigured(safe);
+
+        ISafe _safe = ISafe(payable(safe));
+        uint256 currentNonce = _safe.nonce();
+        if (nonce < currentNonce) revert NonceInThePast(nonce, currentNonce);
+
+        txHash = _safe.getTransactionHash(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce);
+
+        if (_schedules[safe][txHash] != 0) revert AlreadyScheduled(txHash);
+
+        // CEI: write state before the external call to checkSignatures, which may invoke
+        // EIP-1271 isValidSignature callbacks and could otherwise re-enter this function.
+        readyAt = block.timestamp + delay;
+        _schedules[safe][txHash] = readyAt;
+
+        _safe.checkSignatures(address(this), txHash, signatures);
+
+        emit TransactionScheduled(safe, txHash, to, value, data, operation, nonce, readyAt);
     }
 
     /**
@@ -201,16 +214,15 @@ contract TimelockGuard is BaseTransactionGuard {
      * @param txHash The Safe transaction hash to cancel.
      */
     function cancel(address safe, bytes32 txHash) external {
-        // TODO: if (msg.sender != safe && !_cancellers[safe][msg.sender]) revert NotAuthorizedCanceller()
-        // TODO: if (_schedules[safe][txHash] == 0) revert NotScheduled(txHash)
-        // TODO: delete _schedules[safe][txHash]
-        // TODO: emit TransactionCancelled(safe, txHash, msg.sender)
+        if (msg.sender != safe && !_cancellers[safe][msg.sender]) revert NotAuthorizedCanceller();
+        if (_schedules[safe][txHash] == 0) revert NotScheduled(txHash);
+        delete _schedules[safe][txHash];
+        emit TransactionCancelled(safe, txHash, msg.sender);
     }
 
     // ─── Guard hooks ─────────────────────────────────────────────────────────
 
     /**
-     * @inheritdoc ITransactionGuard
      * @dev Called by Safe.execTransaction after signature verification and nonce increment.
      *      The Safe's nonce is already post-incremented at this point, so the nonce used to
      *      compute the current txHash is `ISafe(msg.sender).nonce() - 1`.
@@ -227,27 +239,43 @@ contract TimelockGuard is BaseTransactionGuard {
         address gasToken,
         // solhint-disable-next-line no-unused-vars
         address payable refundReceiver,
-        bytes memory, /* signatures */
+        bytes memory /* signatures */,
         address /* msgSender */
     ) external view override {
-        // TODO: uint256 nonce = ISafe(msg.sender).nonce() - 1
-        // TODO: bytes32 txHash = ISafe(msg.sender).getTransactionHash(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce)
-        // TODO: uint256 readyAt = _schedules[msg.sender][txHash]
-        // TODO: if (readyAt == 0) revert NotScheduled(txHash)
-        // TODO: if (block.timestamp < readyAt) revert DelayNotElapsed(readyAt, block.timestamp)
+        if (_delays[msg.sender] == 0) revert TimelockNotConfigured(msg.sender);
+
+        // Safe post-increments its nonce before calling checkTransaction, so subtract 1.
+        ISafe _safe = ISafe(payable(msg.sender));
+        uint256 nonce = _safe.nonce() - 1;
+
+        bytes32 txHash = _safe.getTransactionHash(
+            to,
+            value,
+            data,
+            operation,
+            safeTxGas,
+            baseGas,
+            gasPrice,
+            gasToken,
+            refundReceiver,
+            nonce
+        );
+
+        uint256 readyAt = _schedules[msg.sender][txHash];
+        if (readyAt == 0) revert NotScheduled(txHash);
+        if (block.timestamp < readyAt) revert DelayNotElapsed(readyAt, block.timestamp);
     }
 
     /**
-     * @inheritdoc ITransactionGuard
      * @dev Clears the schedule entry after a successful execution to prevent replay.
      *      If execution failed, the entry is left intact: signers may resubmit (note that Safe
      *      increments its nonce even on failure, so a new scheduling call will be required).
      */
     function checkAfterExecution(bytes32 txHash, bool success) external override {
-        // TODO: if (success) {
-        //          delete _schedules[msg.sender][txHash]
-        //          emit TransactionExecuted(msg.sender, txHash)
-        //       }
+        if (success) {
+            delete _schedules[msg.sender][txHash];
+            emit TransactionExecuted(msg.sender, txHash);
+        }
     }
 
     // ─── Views ───────────────────────────────────────────────────────────────
@@ -269,8 +297,8 @@ contract TimelockGuard is BaseTransactionGuard {
 
     // ─── Internal ────────────────────────────────────────────────────────────
 
-    // TODO: function _validateDelay(uint256 delay) internal view {
-    //          if (delay < MIN_DELAY) revert DelayBelowMinimum(delay, MIN_DELAY)
-    //          if (delay > MAX_DELAY) revert DelayAboveMaximum(delay, MAX_DELAY)
-    //       }
+    function _validateDelay(uint256 delay) private view {
+        if (delay < MIN_DELAY) revert DelayBelowMinimum(delay, MIN_DELAY);
+        if (delay > MAX_DELAY) revert DelayAboveMaximum(delay, MAX_DELAY);
+    }
 }

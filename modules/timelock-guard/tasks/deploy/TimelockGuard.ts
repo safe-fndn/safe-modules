@@ -7,16 +7,16 @@ const MIN_DELAY = process.env.TIMELOCK_MIN_DELAY ? parseInt(process.env.TIMELOCK
 const MAX_DELAY = process.env.TIMELOCK_MAX_DELAY ? parseInt(process.env.TIMELOCK_MAX_DELAY) : 30 * 24 * 60 * 60
 
 const deploy: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
-    const { deployments, getNamedAccounts } = hre
-    const { deploy } = deployments
-    const { deployer } = await getNamedAccounts()
+  const { deployments, getNamedAccounts } = hre
+  const { deploy } = deployments
+  const { deployer } = await getNamedAccounts()
 
-    await deploy('TimelockGuard', {
-        from: deployer,
-        args: [MIN_DELAY, MAX_DELAY],
-        log: true,
-        deterministicDeployment: true,
-    })
+  await deploy('TimelockGuard', {
+    from: deployer,
+    args: [MIN_DELAY, MAX_DELAY],
+    log: true,
+    deterministicDeployment: true,
+  })
 }
 
 deploy.tags = ['TimelockGuard']
