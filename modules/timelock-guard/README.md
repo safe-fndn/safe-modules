@@ -23,6 +23,30 @@ safe.execTransaction(address(safe), 0, abi.encodeCall(safe.setGuard, (address(ti
 // From this point, all execTransactions are timelocked.
 ```
 
+## Canceller management
+
+By default only the Safe itself can cancel a scheduled transaction (which is itself timelocked once the guard is installed). To allow faster cancellation without requiring a full Safe vote, the Safe can grant trusted EOAs or contracts the right to cancel individual transactions:
+
+```solidity
+// Grant cancellation rights to an operations key
+timelockGuard.setCanceller(opsKey, true);
+
+// Revoke
+timelockGuard.setCanceller(opsKey, false);
+```
+
+Cancellers can cancel **any** scheduled transaction for their Safe. Grant this right only to addresses whose compromise would not be worse than the attack the delay is designed to prevent.
+
+## Security considerations
+
+**Bootstrapping order matters.** Call `setUp` via `execTransaction` *before* calling `setGuard`. If the guard is installed first, the `setUp` call itself becomes subject to the delay — creating a deadlock where no transactions can execute until the delay elapses, but the delay cannot be configured until a transaction executes.
+
+**Reconfiguration is self-timelocked.** Once the guard is installed, calls to `updateDelay`, `setCanceller`, and even `setGuard(address(0))` (removal) are timelocked. This is intentional: it prevents an attacker who gains transient control of the threshold from instantly disabling the guard.
+
+**Nonce invalidation.** If two transactions are scheduled for the same Safe nonce, executing one invalidates the other's signatures at the Safe level. This is standard Safe behavior, not a guard limitation.
+
+**Singleton deployment.** A single `TimelockGuard` deployment serves any number of Safes. All state is keyed by the Safe address, so one Safe's configuration cannot affect another's.
+
 ## Contract addresses
 
 | Network | Address |
