@@ -9,12 +9,12 @@ import { getSingletonFactoryInfo } from '@safe-global/safe-singleton-factory'
 
 dotenv.config()
 
-const { INFURA_KEY, MNEMONIC, ETHERSCAN_API_KEY, CUSTOM_NODE_URL, HARDHAT_CHAIN_ID = 31337 } = process.env
+const { INFURA_KEY, MNEMONIC, PRIVATE_KEY, ETHERSCAN_API_KEY, CUSTOM_NODE_URL, HARDHAT_CHAIN_ID = 31337 } = process.env
 
 const sharedNetworkConfig: HttpNetworkUserConfig = {
-    accounts: {
-        mnemonic: MNEMONIC || 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
-    },
+    accounts: PRIVATE_KEY
+        ? [PRIVATE_KEY]
+        : { mnemonic: MNEMONIC || 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' },
 }
 
 const customNetwork = CUSTOM_NODE_URL ? { custom: { ...sharedNetworkConfig, url: CUSTOM_NODE_URL } } : {}
@@ -48,14 +48,28 @@ const config: HardhatUserConfig = {
                     : 31337,
         },
         mainnet: { ...sharedNetworkConfig, url: `https://mainnet.infura.io/v3/${INFURA_KEY}` },
-        sepolia: { ...sharedNetworkConfig, url: `https://sepolia.infura.io/v3/${INFURA_KEY}` },
+        sepolia: { ...sharedNetworkConfig, url: CUSTOM_NODE_URL || `https://sepolia.infura.io/v3/${INFURA_KEY}` },
         gnosis: { ...sharedNetworkConfig, url: 'https://rpc.gnosischain.com' },
         polygon: { ...sharedNetworkConfig, url: `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}` },
         ...customNetwork,
     },
     deterministicDeployment,
     namedAccounts: { deployer: 0 },
-    etherscan: { apiKey: ETHERSCAN_API_KEY },
+    etherscan: {
+        apiKey: ETHERSCAN_API_KEY,
+        // Etherscan V1 was deprecated 2025-08-15; V2 requires chainid as a query param.
+        // hardhat-deploy's etherscan-verify still uses V1 — use `hardhat verify` instead.
+        customChains: [
+            {
+                network: 'sepolia',
+                chainId: 11155111,
+                urls: {
+                    apiURL: 'https://api.etherscan.io/v2/api?chainid=11155111',
+                    browserURL: 'https://sepolia.etherscan.io',
+                },
+            },
+        ],
+    },
     gasReporter: { enabled: true },
 }
 
