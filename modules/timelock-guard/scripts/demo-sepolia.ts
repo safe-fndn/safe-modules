@@ -132,11 +132,11 @@ async function main() {
   const guard = TimelockGuard__factory.connect(GUARD_ADDRESS, deployer)
 
   // ── Step 1: Deploy Safe proxy ─────────────────────────────────────────────
-  const safeL2Deployment = getSafeL2SingletonDeployment({ version: '1.5.0', network: String(chainId) })
-  const proxyFactoryDeployment = getProxyFactoryDeployment({ version: '1.5.0', network: String(chainId) })
+  const safeL2Deployment = getSafeL2SingletonDeployment({ version: '1.4.1', network: String(chainId) })
+  const proxyFactoryDeployment = getProxyFactoryDeployment({ version: '1.4.1', network: String(chainId) })
 
   if (!safeL2Deployment || !proxyFactoryDeployment) {
-    throw new Error(`Safe v1.5.0 contracts not found in safe-deployments for chain ${chainId}`)
+    throw new Error(`Safe v1.4.1 contracts not found in safe-deployments for chain ${chainId}`)
   }
 
   const singletonAddr = safeL2Deployment.networkAddresses[String(chainId)]
