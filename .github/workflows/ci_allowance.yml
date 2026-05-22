@@ -38,7 +38,7 @@ jobs:
           cache: pnpm
       - run: |
           pnpm install
-          pnpm run --filter "@safe-global/safe-allowance-module" test:all
+          pnpm run --filter "@safe-global/safe-allowance-module" test
   lint:
     runs-on: ubuntu-latest
     steps:
