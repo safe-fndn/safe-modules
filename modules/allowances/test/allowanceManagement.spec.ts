@@ -455,6 +455,9 @@ describe('AllowanceModule allowanceManagement', () => {
     expect(await token.balanceOf(safeAddress)).to.equal(900)
     expect(await token.balanceOf(bob.address)).to.equal(99)
     expect(await token.balanceOf(charlie.address)).to.equal(1)
+
+    const [, spent] = await allowanceModule.getTokenAllowance(safeAddress, alice.address, tokenAddress)
+    expect(spent).to.equal(100)
   })
 
   it('Use allowance with payment in different token', async () => {
