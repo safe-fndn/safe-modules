@@ -16,7 +16,7 @@
     "@safe-global/safe-contracts": "1.4.1-2",
     "@safe-global/safe-deployments": "^1.37.22",
     "@safe-global/safe-modules-deployments": "^2.2.4",
-    "@safe-global/safe-passkey": "workspace:^0.2.1-1",
+    "@safe-global/safe-passkey": "workspace:^0.3.0",
     "@web3modal/ethers": "^4.1.11",
     "ethers": "^6.13.4",
     "react": "^18.3.1",

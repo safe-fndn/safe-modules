@@ -2,7 +2,7 @@
 
 This package contains a social recovery module compatible with the Safe smart account. It was developed by Candide Labs, and subsequently formally verified by Safe. For additional documentation, full source code, and formal verification specification, see the [Candide Labs contracts](https://github.com/candidelabs/candide-contracts) repository.
 
-The Safe team maintains a snapshot of the code that was evaluated at [5afe/CandideWalletContracts](https://github.com/5afe/CandideWalletContracts/tree/113d3c059e039e332637e8f686d9cbd505f1e738).
+The Safe team maintains a snapshot of the code that was evaluated at [safe-fndn/candide-contracts](https://github.com/safe-fndn/candide-contracts/tree/113d3c059e039e332637e8f686d9cbd505f1e738).
 
 ## External Contributions
 
