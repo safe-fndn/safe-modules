@@ -109,7 +109,7 @@ importers:
         specifier: ^2.2.4
         version: 2.2.4
       '@safe-global/safe-passkey':
-        specifier: workspace:^0.2.1-1
+        specifier: workspace:^0.3.0
         version: link:../../modules/passkey
       '@web3modal/ethers':
         specifier: ^4.1.11
@@ -373,8 +373,8 @@ importers:
         specifier: 1.4.1-2
         version: 1.4.1-2(ethers@6.13.4(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       candide-contracts:
-        specifier: github:5afe/CandideWalletContracts#113d3c059e039e332637e8f686d9cbd505f1e738
-        version: https://codeload.github.com/5afe/CandideWalletContracts/tar.gz/113d3c059e039e332637e8f686d9cbd505f1e738
+        specifier: github:safe-fndn/candide-contracts#113d3c059e039e332637e8f686d9cbd505f1e738
+        version: https://codeload.github.com/safe-fndn/candide-contracts/tar.gz/113d3c059e039e332637e8f686d9cbd505f1e738
     devDependencies:
       '@nomicfoundation/hardhat-ethers':
         specifier: ^3.0.8
@@ -3649,8 +3649,8 @@ packages:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
 
-  candide-contracts@https://codeload.github.com/5afe/CandideWalletContracts/tar.gz/113d3c059e039e332637e8f686d9cbd505f1e738:
-    resolution: {tarball: https://codeload.github.com/5afe/CandideWalletContracts/tar.gz/113d3c059e039e332637e8f686d9cbd505f1e738}
+  candide-contracts@https://codeload.github.com/safe-fndn/candide-contracts/tar.gz/113d3c059e039e332637e8f686d9cbd505f1e738:
+    resolution: {tarball: https://codeload.github.com/safe-fndn/candide-contracts/tar.gz/113d3c059e039e332637e8f686d9cbd505f1e738}
     version: 0.1.0-alpha.0
 
   caniuse-lite@1.0.30001668:
@@ -12237,7 +12237,7 @@ snapshots:
 
   camelcase@6.3.0: {}
 
-  candide-contracts@https://codeload.github.com/5afe/CandideWalletContracts/tar.gz/113d3c059e039e332637e8f686d9cbd505f1e738: {}
+  candide-contracts@https://codeload.github.com/safe-fndn/candide-contracts/tar.gz/113d3c059e039e332637e8f686d9cbd505f1e738: {}
 
   caniuse-lite@1.0.30001668: {}
 
