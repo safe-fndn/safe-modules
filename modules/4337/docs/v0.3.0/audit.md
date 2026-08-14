@@ -18,7 +18,7 @@ The final audit was performed on commit [7b3ea24cf06dca2bc88405fd1c991b2338f565f
 
 ### Auditor
 
-Certora (<>).
+Certora (<https://www.certora.com/>).
 
 ### Notes
 
