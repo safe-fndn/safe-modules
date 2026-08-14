@@ -124,8 +124,8 @@ sequenceDiagram
 The signatures are encoded as follows:
 
 ```solidity
-function encodeSignatures(uint48 validUntil, uint48 validAfter, bytes signatures) {
-  return abi.encodePacked(validUntil, validAfter, signatures);
+function encodeSignatures(uint48 validAfter, uint48 validUntil, bytes signatures) {
+  return abi.encodePacked(validAfter, validUntil, signatures);
 }
 ```
 
