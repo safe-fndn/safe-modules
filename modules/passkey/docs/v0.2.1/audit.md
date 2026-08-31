@@ -26,7 +26,9 @@ There were three low severity findings that were found as part of the competitio
 
 - [Final audit competition report](audit-competition-report-hats.md)
 
-## Auditor
+## Audit 1
+
+### Auditor
 
 Certora (<https://www.certora.com/>).
 
@@ -39,3 +41,19 @@ No new issues were discovered during this audit.
 ### Files
 
 - [Final audit report](audit-report-certora.pdf)
+
+## Audit 2
+
+### Auditor
+
+Nethermind Security (<https://www.nethermind.io/>).
+
+### Notes
+
+The final audit was performed on commit [dfd3b05966e727dbb7a2fdeef52e4b230f63304e](https://github.com/safe-fndn/safe-modules/tree/dfd3b05966e727dbb7a2fdeef52e4b230f63304e). Unlike the previous audit, the scope of this audit included the `SafeWebAuthnSharedSigner` contract.
+
+No issues were discovered during this audit.
+
+### Files
+
+- [Final audit report](audit-report-nethermind.pdf)
