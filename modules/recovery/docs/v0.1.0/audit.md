@@ -31,3 +31,19 @@ No issues were discovered during this audit.
 ### Files
 
 - [Final audit report](audit-report-nethermind.pdf)
+
+## Audit 3
+
+### Auditor
+
+Certora (<https://www.certora.com/>).
+
+### Notes
+
+The final audit was performed on commit [8076191f93e88eefaae3508efa8b12a091158c68](https://github.com/safe-fndn/safe-modules/tree/8076191f93e88eefaae3508efa8b12a091158c68), with `SocialRecoveryModule.sol` and `GuardianStorage.sol` in scope.
+
+The audit reported 15 findings: one medium severity, five low severity and nine informational. All of them are recorded as acknowledged in the report, and none were fixed as part of it.
+
+### Files
+
+- [Final audit report](audit-report-certora.pdf)
