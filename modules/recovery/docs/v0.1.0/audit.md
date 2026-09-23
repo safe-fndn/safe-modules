@@ -42,7 +42,9 @@ Certora (<https://www.certora.com/>).
 
 The final audit was performed on commit [8076191f93e88eefaae3508efa8b12a091158c68](https://github.com/safe-fndn/safe-modules/tree/8076191f93e88eefaae3508efa8b12a091158c68), with `SocialRecoveryModule.sol` and `GuardianStorage.sol` in scope.
 
-The audit reported 15 findings: one medium severity, five low severity and nine informational. All of them are recorded as acknowledged in the report, and none were fixed as part of it.
+The audit reported 15 findings: one medium severity, five low severity and nine informational. Candide fixed 11 of them, including the medium severity finding, in [candidelabs/candide-contracts#28](https://github.com/candidelabs/candide-contracts/pull/28). Certora reviewed the fixes at commit [d0959d28ae084a7d549bb2c12d04482653456c2c](https://github.com/candidelabs/candide-contracts/tree/d0959d28ae084a7d549bb2c12d04482653456c2c). The remaining one low and three informational findings are acknowledged.
+
+These fixes are not part of version 0.1.0 of this package, which still builds from the audited snapshot at commit [113d3c059e039e332637e8f686d9cbd505f1e738](https://github.com/safe-fndn/candide-contracts/tree/113d3c059e039e332637e8f686d9cbd505f1e738).
 
 ### Files
 
