@@ -390,4 +390,75 @@ describe('Safe4337Module', () => {
       ).to.be.revertedWithCustomError(safeModule, 'UnsupportedEntryPoint')
     })
   })
+
+  describe('_checkSignaturesLength', () => {
+    const buildP256Signature = (ownerAddress: string, dynamicOffset: number = 65): string => {
+      const staticPart = ethers.solidityPacked(['bytes32', 'uint256', 'uint8'], [ethers.zeroPadValue(ownerAddress, 32), dynamicOffset, 2])
+      const dynamicPart = ethers.hexlify(ethers.randomBytes(128))
+      return ethers.concat([staticPart, dynamicPart])
+    }
+
+    it('should validate signature length for secp256r1 (v = 2) signatures with 128-byte dynamic data', async () => {
+      const { entryPoint, user } = await setupTests()
+      const harnessFactory = await ethers.getContractFactory('TestSafe4337Module')
+      const harness = await harnessFactory.deploy(await entryPoint.getAddress())
+
+      const p256Signature = buildP256Signature(user.address, 65)
+      expect(ethers.getBytes(p256Signature).length).to.equal(65 + 128)
+
+      expect(await harness.checkSignaturesLength(p256Signature, 1)).to.be.true
+    })
+
+    it('should reject secp256r1 (v = 2) signatures when additional padding bytes are appended', async () => {
+      const { entryPoint, user } = await setupTests()
+      const harnessFactory = await ethers.getContractFactory('TestSafe4337Module')
+      const harness = await harnessFactory.deploy(await entryPoint.getAddress())
+
+      const p256Signature = buildP256Signature(user.address, 65)
+      const paddedSignature = ethers.concat([p256Signature, '0x00'])
+      expect(ethers.getBytes(paddedSignature).length).to.equal(65 + 128 + 1)
+
+      expect(await harness.checkSignaturesLength(paddedSignature, 1)).to.be.false
+    })
+
+    it('should reject secp256r1 (v = 2) signatures when signatures are too short', async () => {
+      const { entryPoint } = await setupTests()
+      const harnessFactory = await ethers.getContractFactory('TestSafe4337Module')
+      const harness = await harnessFactory.deploy(await entryPoint.getAddress())
+
+      expect(await harness.checkSignaturesLength('0x1234', 1)).to.be.false
+    })
+
+    it('should validate multi-signer threshold with mixed EOA and secp256r1 (v = 2) signatures', async () => {
+      const { entryPoint, user } = await setupTests()
+      const harnessFactory = await ethers.getContractFactory('TestSafe4337Module')
+      const harness = await harnessFactory.deploy(await entryPoint.getAddress())
+
+      const eoaSig = ethers.concat([ethers.randomBytes(32), ethers.randomBytes(32), '0x1b'])
+      const p256Static = ethers.solidityPacked(['bytes32', 'uint256', 'uint8'], [ethers.zeroPadValue(user.address, 32), 130, 2])
+      const p256Dynamic = ethers.hexlify(ethers.randomBytes(128))
+
+      const combinedSignatures = ethers.concat([eoaSig, p256Static, p256Dynamic])
+      expect(ethers.getBytes(combinedSignatures).length).to.equal(65 + 65 + 128)
+
+      expect(await harness.checkSignaturesLength(combinedSignatures, 2)).to.be.true
+    })
+
+    it('should validate multi-signer threshold with mixed Contract (v = 0) and secp256r1 (v = 2) signatures', async () => {
+      const { entryPoint, user, untrusted } = await setupTests()
+      const harnessFactory = await ethers.getContractFactory('TestSafe4337Module')
+      const harness = await harnessFactory.deploy(await entryPoint.getAddress())
+
+      const contractStatic = ethers.solidityPacked(['bytes32', 'uint256', 'uint8'], [ethers.zeroPadValue(untrusted.address, 32), 130, 0])
+      const p256Static = ethers.solidityPacked(['bytes32', 'uint256', 'uint8'], [ethers.zeroPadValue(user.address, 32), 226, 2])
+
+      const contractDynamic = ethers.solidityPacked(['uint256', 'bytes'], [64, ethers.randomBytes(64)])
+      const p256Dynamic = ethers.hexlify(ethers.randomBytes(128))
+
+      const combinedSignatures = ethers.concat([contractStatic, p256Static, contractDynamic, p256Dynamic])
+      expect(ethers.getBytes(combinedSignatures).length).to.equal(65 + 65 + 96 + 128)
+
+      expect(await harness.checkSignaturesLength(combinedSignatures, 2)).to.be.true
+    })
+  })
 })
